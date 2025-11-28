@@ -194,3 +194,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# API Documentation Settings (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ShareLib API',
+    'DESCRIPTION': 'Community Borrow & Return Library API Documentation',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'AUTHENTICATION_WHITELIST': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
