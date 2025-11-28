@@ -1,6 +1,9 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Rating
+from items.models import Item
 from rest_framework import serializers
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -32,3 +35,21 @@ class RatingViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(from_user=self.request.user)
+    
+    @action(detail=False, methods=['get'], url_path='item/(?P<item_id>[^/.]+)', permission_classes=[AllowAny])
+    def by_item(self, request, item_id=None):
+        """
+        Get all ratings for a specific item
+        GET /api/ratings/item/{item_id}/
+        """
+        try:
+            item = Item.objects.get(id=item_id)
+        except Item.DoesNotExist:
+            return Response(
+                {'detail': 'Item not found.'},
+                status=404
+            )
+        
+        ratings = Rating.objects.filter(item=item).order_by('-created_at')
+        serializer = self.get_serializer(ratings, many=True)
+        return Response(serializer.data)

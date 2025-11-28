@@ -15,6 +15,8 @@ class BorrowRequest(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     request_date = models.DateTimeField(auto_now_add=True)
     message = models.TextField(blank=True)
+    start_date = models.DateTimeField(null=True, blank=True)  # Requested start date
+    end_date = models.DateTimeField(null=True, blank=True)  # Requested end date
 
 class BorrowRecord(models.Model):
     STATUS_CHOICES = [
