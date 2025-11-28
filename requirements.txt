@@ -1,0 +1,66 @@
+# ShareLib Django Backend - Requirements Template
+# Copy this to requirements.txt and install with: pip install -r requirements.txt
+
+# Core Django
+Django>=5.0.0,<6.0.0
+djangorestframework>=3.14.0
+
+# Authentication
+djangorestframework-simplejwt>=5.3.0
+
+# CORS (Cross-Origin Resource Sharing)
+django-cors-headers>=4.3.0
+
+# Image Processing
+Pillow>=10.0.0
+
+# Environment Variables
+python-decouple>=3.8
+
+# Database (PostgreSQL - Production)
+psycopg2-binary>=2.9.9
+dj-database-url>=2.1.0  # For parsing DATABASE_URL from environment
+
+# Filtering & Search
+django-filter>=23.3
+
+# API Documentation
+drf-spectacular>=0.26.0
+
+# Background Tasks (Optional but Recommended)
+celery>=5.3.0
+redis>=5.0.0
+
+# Date/Time Utilities
+python-dateutil>=2.8.2
+
+# Validation
+django-extensions>=3.2.0  # Useful for development
+
+# Development Tools (Optional)
+ipython>=8.12.0  # Better shell
+django-debug-toolbar>=4.2.0  # Debug toolbar (dev only)
+
+# Testing (Optional)
+pytest>=7.4.0,<9.0.0  # Pytest 9.x requires Python 3.11+
+pytest-django>=4.5.2
+factory-boy>=3.3.0  # For test data generation
+coverage>=7.3.0  # Test coverage
+
+# Production (Optional - for deployment)
+gunicorn>=21.2.0  # WSGI server
+whitenoise>=6.6.0  # Static file serving
+django-storages>=1.14.0  # For S3 storage (if using AWS)
+
+# Security (Optional but Recommended)
+django-ratelimit>=4.1.0  # Rate limiting
+
+# Email (Optional - for email notifications)
+# Choose ONE of the following email backends:
+# django-ses>=3.5.0  # AWS SES backend (uncomment if using AWS SES)
+# sendgrid>=6.0.0  # SendGrid backend (uncomment if using SendGrid)
+# Note: For development, Django's default email backend works fine
+
+# Monitoring (Optional)
+sentry-sdk>=1.38.0  # Error tracking
+
