@@ -24,7 +24,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView
 )
-from accounts.views import UserDetailView
+from accounts.views import UserDetailView, UserStatsView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/users/', include([
+        path('me/stats/', UserStatsView.as_view(), name='user-stats'),
         path('<int:id>/', UserDetailView.as_view(), name='user-detail'),
     ])),
     path('api/items/', include('items.urls')),

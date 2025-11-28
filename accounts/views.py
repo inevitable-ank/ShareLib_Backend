@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.db.models import Avg
 from .models import User
 from .serializers import UserSerializer, RegisterSerializer, EmailLoginSerializer
+from items.models import Item
+from borrows.models import BorrowRecord
+from ratings.models import Rating
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -67,3 +71,54 @@ class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     lookup_field = 'id'
     lookup_url_kwarg = 'id'
+
+class UserStatsView(generics.RetrieveAPIView):
+    """
+    Get user statistics including items lent, items borrowed, active loans, and ratings.
+    GET /api/users/me/stats/
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        
+        # Calculate items lent (total items owned by user)
+        items_lent = Item.objects.filter(owner=user).count()
+        
+        # Calculate items borrowed (count of borrow records where user is borrower)
+        # This includes both active and completed borrows
+        items_borrowed = BorrowRecord.objects.filter(
+            request__borrower=user,
+            status__in=['borrowed', 'returned']
+        ).count()
+        
+        # Calculate active loans (currently borrowed items)
+        active_loans = BorrowRecord.objects.filter(
+            request__borrower=user,
+            status='borrowed'
+        ).count()
+        
+        # Calculate average lender rating
+        # Lender rating: ratings where the user (to_user) owns the item
+        lender_ratings_avg = Rating.objects.filter(
+            to_user=user,
+            item__owner=user
+        ).aggregate(avg_rating=Avg('stars'))['avg_rating']
+        
+        average_lender_rating = f"{lender_ratings_avg:.2f}" if lender_ratings_avg else "0.00"
+        
+        # Calculate average borrower rating
+        # Borrower rating: ratings where the user (to_user) borrowed the item (doesn't own it)
+        borrower_ratings_avg = Rating.objects.filter(
+            to_user=user
+        ).exclude(item__owner=user).aggregate(avg_rating=Avg('stars'))['avg_rating']
+        
+        average_borrower_rating = f"{borrower_ratings_avg:.2f}" if borrower_ratings_avg else "0.00"
+        
+        return Response({
+            'items_lent': items_lent,
+            'items_borrowed': items_borrowed,
+            'active_loans': active_loans,
+            'average_lender_rating': average_lender_rating,
+            'average_borrower_rating': average_borrower_rating
+        })
