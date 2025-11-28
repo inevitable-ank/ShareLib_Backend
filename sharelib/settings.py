@@ -206,4 +206,12 @@ SPECTACULAR_SETTINGS = {
     'AUTHENTICATION_WHITELIST': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    # Fix enum naming collisions for "status" fields
+    'ENUM_NAME_OVERRIDES': {
+        'BorrowRequestStatusEnum': 'borrows.models.BorrowRequest.STATUS_CHOICES',
+        'BorrowRecordStatusEnum': 'borrows.models.BorrowRecord.STATUS_CHOICES',
+        'ItemStatusEnum': 'items.models.Item.STATUS_CHOICES',
+        'NotificationTypeEnum': 'notifications.models.Notification.TYPE_CHOICES',
+        'DamageReportStatusEnum': 'borrows.models.DamageReport.STATUS_CHOICES',
+    },
 }

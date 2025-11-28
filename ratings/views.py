@@ -13,10 +13,15 @@ class RatingSerializer(serializers.ModelSerializer):
         read_only_fields = ['from_user', 'created_at']
 
 class RatingViewSet(viewsets.ModelViewSet):
+    queryset = Rating.objects.none()  # For schema generation
     serializer_class = RatingSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        # Skip queryset evaluation during schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return Rating.objects.none()
+        
         # Users can see ratings they gave and ratings they received
         user = self.request.user
         return Rating.objects.filter(
