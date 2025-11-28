@@ -16,12 +16,29 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
             return BorrowRequest.objects.none()
         
         user = self.request.user
-        # Users can see their own requests and requests for items they own
-        return BorrowRequest.objects.filter(
-            borrower=user
-        ) | BorrowRequest.objects.filter(
-            item__owner=user
-        )
+        queryset = BorrowRequest.objects.all()
+        
+        # Filter by query parameters
+        lender = self.request.query_params.get('lender', None)
+        owner = self.request.query_params.get('owner', None)
+        borrower = self.request.query_params.get('borrower', None)
+        
+        # If specific filters are requested, apply them
+        if lender == 'me' or owner == 'me':
+            # Return only requests for items the user owns (as lender)
+            queryset = queryset.filter(item__owner=user)
+        elif borrower == 'me':
+            # Return only requests where the user is the borrower
+            queryset = queryset.filter(borrower=user)
+        else:
+            # Default: Users can see their own requests and requests for items they own
+            queryset = queryset.filter(
+                borrower=user
+            ) | queryset.filter(
+                item__owner=user
+            )
+        
+        return queryset
     
     def perform_create(self, serializer):
         borrow_request = serializer.save(borrower=self.request.user)
@@ -88,12 +105,42 @@ class BorrowRecordViewSet(viewsets.ModelViewSet):
             return BorrowRecord.objects.none()
         
         user = self.request.user
-        # Users can see records where they are borrower or owner
-        return BorrowRecord.objects.filter(
-            request__borrower=user
-        ) | BorrowRecord.objects.filter(
-            request__item__owner=user
-        )
+        queryset = BorrowRecord.objects.all()
+        
+        # Filter by query parameters
+        owner = self.request.query_params.get('owner', None)
+        borrower = self.request.query_params.get('borrower', None)
+        
+        # If specific filters are requested, apply them
+        if owner:
+            # Filter by owner ID (can be 'me' or specific ID)
+            if owner == 'me':
+                queryset = queryset.filter(request__item__owner=user)
+            else:
+                try:
+                    owner_id = int(owner)
+                    queryset = queryset.filter(request__item__owner_id=owner_id)
+                except (ValueError, TypeError):
+                    pass  # Invalid owner ID, return empty queryset
+        elif borrower:
+            # Filter by borrower ID (can be 'me' or specific ID)
+            if borrower == 'me':
+                queryset = queryset.filter(request__borrower=user)
+            else:
+                try:
+                    borrower_id = int(borrower)
+                    queryset = queryset.filter(request__borrower_id=borrower_id)
+                except (ValueError, TypeError):
+                    pass  # Invalid borrower ID, return empty queryset
+        else:
+            # Default: Users can see records where they are borrower or owner
+            queryset = queryset.filter(
+                request__borrower=user
+            ) | queryset.filter(
+                request__item__owner=user
+            )
+        
+        return queryset
     
     def perform_update(self, serializer):
         old_status = self.get_object().status
