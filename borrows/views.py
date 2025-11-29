@@ -60,7 +60,14 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
             )
     
     def perform_update(self, serializer):
-        old_status = self.get_object().status
+        borrow_request = self.get_object()
+        old_status = borrow_request.status
+        
+        # Only allow item owner to approve/reject requests
+        if borrow_request.item.owner != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only the item owner can approve or reject requests.")
+        
         borrow_request = serializer.save()
         new_status = borrow_request.status
         
